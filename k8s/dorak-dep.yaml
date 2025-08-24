@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dorak-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dorak-app
+  template:
+    metadata:
+      labels:
+        app: dorak-app
+    spec:
+      containers:
+        - name: dorak-app
+          image: ahmadsawaed99/dorak:1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dorak-lb-srv
+spec:
+  type: LoadBalancer        # ✅ Ingress works with ClusterIP (no need for LoadBalancer)
+  selector:
+    app: dorak-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80           # ✅ Standard service port for HTTP
+      targetPort: 8080  

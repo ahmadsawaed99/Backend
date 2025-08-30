@@ -1,31 +1,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dorak-depl
+  name: backend-depl
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: dorak-app
+      app: backend
   template:
     metadata:
       labels:
-        app: dorak-app
+        app: backend
     spec:
       containers:
-        - name: dorak-app
-          image: ahmadsawaed99/dorak:1
+        - name: backend
+          image: ahmadsawaed99/backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MongoDb__PathToCAFile
+              value: /app/certs/global-bundle.pem
+          volumeMounts:
+            - name: docdb-ca
+              mountPath: /app/certs
+              readOnly: true
+      volumes:
+        - name: docdb-ca
+          configMap:
+            name: docdb-ca
+            items:
+              - key: global-bundle.pem
+                path: global-bundle.pem
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: dorak-lb-srv
+  name: backend-lb-srv
 spec:
-  type: LoadBalancer        # ✅ Ingress works with ClusterIP (no need for LoadBalancer)
+  type: LoadBalancer
   selector:
-    app: dorak-app
+    app: backend
   ports:
     - name: http
       protocol: TCP
-      port: 80           # ✅ Standard service port for HTTP
-      targetPort: 8080  
+      port: 80
+      targetPort: 8080
